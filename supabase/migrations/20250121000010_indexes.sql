@@ -17,7 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_message_chat_id ON public.message(chat_id);
 CREATE INDEX IF NOT EXISTS idx_message_user_id ON public.message(user_id);
 CREATE INDEX IF NOT EXISTS idx_message_created_at ON public.message(created_at);
 CREATE INDEX IF NOT EXISTS idx_message_role ON public.message(role);
-CREATE INDEX IF NOT EXISTS idx_message_content_gin ON public.message USING gin(content gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_message_content_gin ON public.message USING gin(content);
 CREATE INDEX IF NOT EXISTS idx_message_chat_created ON public.message(chat_id, created_at);
 
 -- Indexes for the document table
@@ -36,7 +36,6 @@ CREATE INDEX IF NOT EXISTS idx_suggestion_created_at ON public.suggestion(create
 CREATE INDEX IF NOT EXISTS idx_vote_message_id ON public.vote(message_id);
 CREATE INDEX IF NOT EXISTS idx_vote_chat_id ON public.vote(chat_id);
 CREATE INDEX IF NOT EXISTS idx_vote_composite ON public.vote(message_id, chat_id);
-CREATE INDEX IF NOT EXISTS idx_vote_user_message ON public.vote(user_id, message_id);
 
 -- Indexes for the attachment table
 CREATE INDEX IF NOT EXISTS idx_attachment_user_id ON public.attachment(user_id);
@@ -60,11 +59,18 @@ CREATE INDEX IF NOT EXISTS idx_attachment_public
     ON public.attachment(created_at) 
     WHERE visibility = 'public';
 
--- Add partial index for recent chats with messages
+-- Function to check if a message timestamp exists
+CREATE OR REPLACE FUNCTION is_recent_message(msg_time timestamptz)
+RETURNS boolean
+IMMUTABLE
+SECURITY INVOKER
+SET search_path = public, extensions
+LANGUAGE sql
+AS $$
+  SELECT msg_time IS NOT NULL;
+$$;
+
+-- Add partial index for recent active chats
 CREATE INDEX IF NOT EXISTS idx_chat_recent_active 
-    ON public.chat(created_at) 
-    WHERE EXISTS (
-        SELECT 1 FROM public.message 
-        WHERE message.chat_id = chat.id 
-        AND message.created_at > NOW() - INTERVAL '30 days'
-    );
+    ON public.chat(created_at, last_message_at) 
+    WHERE is_recent_message(last_message_at);

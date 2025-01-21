@@ -42,11 +42,15 @@ USING (auth.uid() = user_id);
 
 -- Function to get next version for an attachment
 CREATE OR REPLACE FUNCTION get_next_attachment_version(
-    p_bucket_name TEXT,
-    p_storage_path TEXT
-) RETURNS INTEGER AS $$
+    p_bucket_name text,
+    p_storage_path text
+)
+RETURNS integer
+SECURITY INVOKER
+SET search_path = public, extensions
+AS $$
 DECLARE
-    next_version INTEGER;
+    next_version integer;
 BEGIN
     SELECT COALESCE(MAX(version), 0) + 1
     INTO next_version
@@ -60,7 +64,10 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger function to set version
 CREATE OR REPLACE FUNCTION set_attachment_version()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY INVOKER
+SET search_path = public, extensions
+AS $$
 BEGIN
     IF NEW.version = 1 THEN  -- Only auto-increment if not explicitly set
         NEW.version := get_next_attachment_version(NEW.bucket_name, NEW.storage_path);

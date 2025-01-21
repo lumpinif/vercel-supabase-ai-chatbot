@@ -35,3 +35,24 @@ CREATE POLICY "Users can update their own messages" ON public.message
             ELSE false
         END
     );
+
+-- Create trigger function to update last_message_at from chat table
+CREATE OR REPLACE FUNCTION update_chat_last_message_at()
+RETURNS TRIGGER
+SECURITY INVOKER
+SET search_path = public, extensions
+AS $$
+BEGIN
+    UPDATE public.chat
+    SET last_message_at = NEW.created_at
+    WHERE id = NEW.chat_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically update last_message_at
+DROP TRIGGER IF EXISTS trigger_update_chat_last_message_at ON public.message;
+CREATE TRIGGER trigger_update_chat_last_message_at
+    AFTER INSERT ON public.message
+    FOR EACH ROW
+    EXECUTE FUNCTION update_chat_last_message_at();

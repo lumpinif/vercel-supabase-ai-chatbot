@@ -4,6 +4,8 @@ import type { NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
+// check out : https://supabase.com/docs/guides/auth/server-side/nextjs?queryGroups=router&router=app to cnange the auth confirmation path from the dashboard
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get('token_hash');

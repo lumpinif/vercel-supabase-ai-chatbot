@@ -2,8 +2,7 @@
 
 import { useChat } from 'ai/react';
 import { useEffect, useRef, useState } from 'react';
-import type { BlockKind } from './block';
-import type { Suggestion } from '@/lib/db/schema';
+import type { BlockKind, Suggestion } from '@/lib/db/types';
 import { initialBlockData, useBlock } from '@/hooks/use-block';
 import { useUserMessageId } from '@/hooks/use-user-message-id';
 import { useSWRConfig } from 'swr';
@@ -20,7 +19,7 @@ type DataStreamDelta = {
     | 'finish'
     | 'user-message-id'
     | 'kind';
-  content: string | Suggestion;
+  content: string | Suggestion | BlockKind;
 };
 
 export function DataStreamHandler({ id }: { id: string }) {
@@ -37,7 +36,7 @@ export function DataStreamHandler({ id }: { id: string }) {
   useEffect(() => {
     if (optimisticSuggestions && optimisticSuggestions.length > 0) {
       const [optimisticSuggestion] = optimisticSuggestions;
-      const url = `/api/suggestions?documentId=${optimisticSuggestion.documentId}`;
+      const url = `/api/suggestions?documentId=${optimisticSuggestion.document_id}`;
       mutate(url, optimisticSuggestions, false);
     }
   }, [optimisticSuggestions, mutate]);
@@ -122,7 +121,6 @@ export function DataStreamHandler({ id }: { id: string }) {
                 delta.content as Suggestion,
               ]);
             }, 0);
-
             return draftBlock;
 
           case 'clear':

@@ -1,6 +1,6 @@
 'use client';
 
-import type { BlockKind } from './block';
+import type { BlockKind } from '@/lib/db/types';
 
 export const DocumentSkeleton = ({ blockKind }: { blockKind: BlockKind }) => {
   return blockKind === 'image' ? (

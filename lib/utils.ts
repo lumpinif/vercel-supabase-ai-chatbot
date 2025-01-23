@@ -4,11 +4,14 @@ import type {
   CoreToolMessage,
   Message,
   ToolInvocation,
+  ToolCallPart,
+  ToolResultPart,
+  TextPart,
 } from 'ai';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
+import type { Message as DBMessage, Document } from '@/lib/db/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -84,13 +87,17 @@ function addToolMessageToChat({
   });
 }
 
+type DBMessageContent = ToolResultPart | ToolCallPart | TextPart;
+
 export function convertToUIMessages(
   messages: Array<DBMessage>,
 ): Array<Message> {
   return messages.reduce((chatMessages: Array<Message>, message) => {
     if (message.role === 'tool') {
+      // Type assertion since we know tool messages follow the CoreToolMessage structure
+      const toolMessage = message as unknown as CoreToolMessage;
       return addToolMessageToChat({
-        toolMessage: message as CoreToolMessage,
+        toolMessage,
         messages: chatMessages,
       });
     }
@@ -102,14 +109,17 @@ export function convertToUIMessages(
       textContent = message.content;
     } else if (Array.isArray(message.content)) {
       for (const content of message.content) {
-        if (content.type === 'text') {
-          textContent += content.text;
-        } else if (content.type === 'tool-call') {
+        // First cast to unknown, then to DBMessageContent
+        const typedContent = content as unknown as DBMessageContent;
+
+        if (typedContent?.type === 'text') {
+          textContent += typedContent.text;
+        } else if (typedContent?.type === 'tool-call') {
           toolInvocations.push({
             state: 'call',
-            toolCallId: content.toolCallId,
-            toolName: content.toolName,
-            args: content.args,
+            toolCallId: typedContent.toolCallId,
+            toolName: typedContent.toolName,
+            args: typedContent.args,
           });
         }
       }
@@ -210,7 +220,7 @@ export function getDocumentTimestampByIndex(
   if (!documents) return new Date();
   if (index > documents.length) return new Date();
 
-  return documents[index].createdAt;
+  return documents[index].created_at;
 }
 
 export function getMessageIdFromAnnotations(message: Message) {

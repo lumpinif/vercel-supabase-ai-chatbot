@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import type { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/types';
 import { getMessageIdFromAnnotations } from '@/lib/utils';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
@@ -59,7 +59,7 @@ export function PureMessageActions({
           <TooltipTrigger asChild>
             <Button
               className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
-              disabled={vote?.isUpvoted}
+              disabled={vote?.is_upvoted}
               variant="outline"
               onClick={async () => {
                 const messageId = getMessageIdFromAnnotations(message);
@@ -82,15 +82,15 @@ export function PureMessageActions({
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id,
+                          (vote) => vote.message_id !== message.id,
                         );
 
                         return [
                           ...votesWithoutCurrent,
                           {
-                            chatId,
-                            messageId: message.id,
-                            isUpvoted: true,
+                            chat_id: chatId,
+                            message_id: message.id,
+                            is_upvoted: true,
                           },
                         ];
                       },
@@ -114,7 +114,7 @@ export function PureMessageActions({
             <Button
               className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
               variant="outline"
-              disabled={vote && !vote.isUpvoted}
+              disabled={vote && !vote.is_upvoted}
               onClick={async () => {
                 const messageId = getMessageIdFromAnnotations(message);
 
@@ -136,15 +136,15 @@ export function PureMessageActions({
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id,
+                          (vote) => vote.message_id !== message.id,
                         );
 
                         return [
                           ...votesWithoutCurrent,
                           {
-                            chatId,
-                            messageId: message.id,
-                            isUpvoted: false,
+                            chat_id: chatId,
+                            message_id: message.id,
+                            is_upvoted: false,
                           },
                         ];
                       },

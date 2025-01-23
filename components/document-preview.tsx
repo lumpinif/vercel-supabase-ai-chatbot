@@ -8,10 +8,10 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import type { BlockKind, UIBlock } from './block';
+import type { UIBlock } from './block';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { cn, fetcher } from '@/lib/utils';
-import type { Document } from '@/lib/db/schema';
+import type { BlockKind, Document } from '@/lib/db/types';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import useSWR from 'swr';
 import { Editor } from './editor';
@@ -79,7 +79,9 @@ export function DocumentPreview({
   }
 
   if (isDocumentsFetching) {
-    return <LoadingSkeleton blockKind={result.kind ?? args.kind} />;
+    return (
+      <LoadingSkeleton blockKind={(result?.kind ?? args?.kind) || 'text'} />
+    );
   }
 
   const document: Document | null = previewDocument
@@ -90,12 +92,12 @@ export function DocumentPreview({
           kind: block.kind,
           content: block.content,
           id: block.documentId,
-          createdAt: new Date(),
-          userId: 'noop',
+          created_at: new Date().toISOString(),
+          user_id: 'noop',
         }
       : null;
 
-  if (!document) return <LoadingSkeleton blockKind={block.kind} />;
+  if (!document) return <LoadingSkeleton blockKind={block.kind || 'text'} />;
 
   return (
     <div className="relative w-full cursor-pointer">

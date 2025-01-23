@@ -10,9 +10,9 @@ import {
 import { z } from 'zod';
 import { customModel, imageGenerationModel } from '..';
 import { codePrompt } from '../prompts';
-import { saveDocument } from '@/lib/db/queries';
 import type { Model } from '../models';
 import type { User } from '@supabase/supabase-js';
+import { saveDocument } from '@/lib/db/supabase/queries';
 
 interface CreateDocumentProps {
   model: Model;
@@ -132,7 +132,7 @@ export const createDocument = ({
           title,
           kind,
           content: draftText,
-          userId: user.id,
+          user_id: user.id,
         });
       }
 

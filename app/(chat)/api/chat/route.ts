@@ -10,12 +10,6 @@ import { customModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
-  deleteChatById,
-  getChatById,
-  saveChat,
-  saveMessages,
-} from '@/lib/db/queries';
-import {
   generateUUID,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
@@ -27,6 +21,16 @@ import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { createClient } from '@/utils/supabase/server';
+import {
+  deleteChatById,
+  getChatById,
+  saveChat,
+  saveMessages,
+} from '@/lib/db/supabase/queries';
+import {
+  formatMessageContent,
+  formatUserContent,
+} from '@/lib/db/supabase/helpers';
 
 export const maxDuration = 60;
 
@@ -84,7 +88,14 @@ export async function POST(request: Request) {
 
   await saveMessages({
     messages: [
-      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
+      {
+        ...userMessage,
+        id: userMessageId,
+        created_at: new Date().toISOString(),
+        chat_id: id,
+        user_id: session.user.id,
+        content: formatUserContent(userMessage.content),
+      },
     ],
   });
 
@@ -139,10 +150,11 @@ export async function POST(request: Request) {
 
                     return {
                       id: messageId,
-                      chatId: id,
+                      chat_id: id,
                       role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
+                      content: formatMessageContent(message),
+                      created_at: new Date().toISOString(),
+                      user_id: session.user.id,
                     };
                   },
                 ),
@@ -181,7 +193,7 @@ export async function DELETE(request: Request) {
   try {
     const chat = await getChatById({ id });
 
-    if (chat.userId !== session.user.id) {
+    if (chat?.user_id !== session.user.id) {
       return new Response('Unauthorized', { status: 401 });
     }
 

@@ -2,7 +2,7 @@ import type { ChatRequestOptions, Message } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { memo } from 'react';
-import type { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/types';
 import equal from 'fast-deep-equal';
 
 interface MessagesProps {
@@ -47,7 +47,7 @@ function PureMessages({
           isLoading={isLoading && messages.length - 1 === index}
           vote={
             votes
-              ? votes.find((vote) => vote.messageId === message.id)
+              ? votes.find((vote) => vote.message_id === message.id)
               : undefined
           }
           setMessages={setMessages}

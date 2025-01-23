@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation';
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
-import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { convertToUIMessages } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { createClient } from '@/utils/supabase/server';
+import { getChatById, getMessagesByChatId } from '@/lib/db/supabase/queries';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -29,7 +29,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       return notFound();
     }
 
-    if (session.user.id !== chat.userId) {
+    if (session.user.id !== chat.user_id) {
       return notFound();
     }
   }
@@ -51,7 +51,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={convertToUIMessages(messagesFromDb)}
         selectedModelId={selectedModelId}
         selectedVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
+        isReadonly={session?.user?.id !== chat.user_id}
       />
       <DataStreamHandler id={id} />
     </>

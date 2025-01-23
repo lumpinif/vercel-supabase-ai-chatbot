@@ -1,9 +1,9 @@
-import type { BlockKind } from '@/components/block';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
-} from '@/lib/db/queries';
+} from '@/lib/db/supabase/queries';
+import type { BlockKind } from '@/lib/db/types';
 import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: Request) {
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  if (document.userId !== session.user.id) {
+  if (document.user_id !== session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       content,
       title,
       kind,
-      userId: session.user.id,
+      user_id: session.user.id,
     });
 
     return Response.json(document, { status: 200 });
@@ -92,7 +92,7 @@ export async function PATCH(request: Request) {
 
   const [document] = documents;
 
-  if (document.userId !== session.user.id) {
+  if (document.user_id !== session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 

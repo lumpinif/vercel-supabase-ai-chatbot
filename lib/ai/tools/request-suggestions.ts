@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import type { Model } from '../models';
 import { type DataStreamWriter, streamObject, tool } from 'ai';
-import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
-import type { Suggestion } from '@/lib/db/schema';
 import { customModel } from '..';
 import { generateUUID } from '@/lib/utils';
 import type { User } from '@supabase/supabase-js';
+import { getDocumentById, saveSuggestions } from '@/lib/db/supabase/queries';
+import type { Suggestion } from '@/lib/db/types';
 
 interface RequestSuggestionsProps {
   model: Model;
@@ -21,12 +21,12 @@ export const requestSuggestions = ({
   tool({
     description: 'Request suggestions for a document',
     parameters: z.object({
-      documentId: z
+      document_id: z
         .string()
         .describe('The ID of the document to request edits'),
     }),
-    execute: async ({ documentId }) => {
-      const document = await getDocumentById({ id: documentId });
+    execute: async ({ document_id }) => {
+      const document = await getDocumentById({ id: document_id });
 
       if (!document || !document.content) {
         return {
@@ -35,7 +35,7 @@ export const requestSuggestions = ({
       }
 
       const suggestions: Array<
-        Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>
+        Omit<Suggestion, 'user_id' | 'created_at' | 'document_created_at'>
       > = [];
 
       const { elementStream } = streamObject({
@@ -53,12 +53,12 @@ export const requestSuggestions = ({
 
       for await (const element of elementStream) {
         const suggestion = {
-          originalText: element.originalSentence,
-          suggestedText: element.suggestedSentence,
+          original_text: element.originalSentence,
+          suggested_text: element.suggestedSentence,
           description: element.description,
           id: generateUUID(),
-          documentId: documentId,
-          isResolved: false,
+          document_id: document_id,
+          is_resolved: false,
         };
 
         dataStream.writeData({
@@ -70,20 +70,20 @@ export const requestSuggestions = ({
       }
 
       if (user?.id) {
-        const userId = user?.id;
+        const user_id = user?.id;
 
         await saveSuggestions({
           suggestions: suggestions.map((suggestion) => ({
             ...suggestion,
-            userId,
-            createdAt: new Date(),
-            documentCreatedAt: document.createdAt,
+            user_id,
+            created_at: new Date().toISOString(),
+            document_created_at: document.created_at,
           })),
         });
       }
 
       return {
-        id: documentId,
+        id: document_id,
         title: document.title,
         kind: document.kind,
         message: 'Suggestions have been added to the document',

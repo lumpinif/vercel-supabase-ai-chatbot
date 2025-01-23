@@ -6,3 +6,9 @@ CREATE TYPE public.visibility_type AS ENUM (
     'shared',       -- Specific users can access
     'unlisted'      -- Accessible via link only
 );
+
+CREATE TYPE public.block_kind AS ENUM (
+    'text',
+    'image',
+    'code'
+);

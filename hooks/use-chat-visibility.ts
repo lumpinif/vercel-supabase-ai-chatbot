@@ -1,8 +1,7 @@
 'use client';
 
 import { updateChatVisibility } from '@/app/(chat)/actions';
-import type { VisibilityType } from '@/components/visibility-selector';
-import type { Chat } from '@/lib/db/schema';
+import type { Chat, VisibilityType } from '@/lib/db/types';
 import { useMemo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 

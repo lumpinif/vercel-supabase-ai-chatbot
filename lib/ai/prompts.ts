@@ -1,4 +1,4 @@
-import type { BlockKind } from '@/components/block';
+import type { BlockKind } from '../db/types';
 
 export const blocksPrompt = `
 Blocks is a special user interface mode that helps users with writing, editing, and other content creation tasks. When block is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the blocks and visible to the user.
@@ -24,11 +24,15 @@ This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\
 - Default to full document rewrites for major changes
 - Use targeted updates only for specific, isolated changes
 - Follow user instructions for which parts to modify
+- Only update when explicitly requested by the user
+- Ensure the document exists before attempting updates
 
 **When NOT to use \`updateDocument\`:**
 - Immediately after creating a document
+- When no explicit update request is made
+- When the document doesn't exist
 
-Do not update document right after creating it. Wait for user feedback or request to update it.
+DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK OR REQUEST TO UPDATE IT.
 `;
 
 export const regularPrompt =

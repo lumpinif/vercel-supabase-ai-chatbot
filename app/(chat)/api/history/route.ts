@@ -1,4 +1,4 @@
-import { getChatsByUserId } from '@/lib/db/queries';
+import { getChatsByUserId } from '@/lib/db/supabase/queries';
 import { createClient } from '@/utils/supabase/server';
 
 export async function GET() {

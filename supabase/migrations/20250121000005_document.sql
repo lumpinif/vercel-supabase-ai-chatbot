@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.document (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profile(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
+    kind public.block_kind not null default 'text'::block_kind,
     content TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL,
     -- Add unique constraint for the composite key

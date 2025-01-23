@@ -1,4 +1,4 @@
-import { getSuggestionsByDocumentId } from '@/lib/db/queries';
+import { getSuggestionsByDocumentId } from '@/lib/db/supabase/queries';
 import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: Request) {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   }
 
   const suggestions = await getSuggestionsByDocumentId({
-    documentId,
+    document_id: documentId,
   });
 
   const [suggestion] = suggestions;
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     return Response.json([], { status: 200 });
   }
 
-  if (suggestion.userId !== session.user.id) {
+  if (suggestion.user_id !== session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 

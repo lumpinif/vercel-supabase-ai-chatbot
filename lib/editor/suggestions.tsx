@@ -8,8 +8,7 @@ import {
 import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
-import type { Suggestion } from '@/lib/db/schema';
-import type { BlockKind } from '@/components/block';
+import type { BlockKind, Suggestion } from '@/lib/db/types';
 
 export interface UISuggestion extends Suggestion {
   selectionStart: number;
@@ -49,7 +48,7 @@ export function projectWithPositions(
   suggestions: Array<Suggestion>,
 ): Array<UISuggestion> {
   return suggestions.map((suggestion) => {
-    const positions = findPositionsInDoc(doc, suggestion.originalText);
+    const positions = findPositionsInDoc(doc, suggestion.original_text);
 
     if (!positions) {
       return {
@@ -105,7 +104,7 @@ export function createSuggestionWidget(
     const textTransaction = view.state.tr.replaceWith(
       suggestion.selectionStart,
       suggestion.selectionEnd,
-      state.schema.text(suggestion.suggestedText),
+      state.schema.text(suggestion.suggested_text),
     );
 
     textTransaction.setMeta('no-debounce', true);

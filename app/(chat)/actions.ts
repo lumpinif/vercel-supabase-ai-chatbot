@@ -4,12 +4,13 @@ import { type CoreUserMessage, generateText } from 'ai';
 import { cookies } from 'next/headers';
 
 import { customModel } from '@/lib/ai';
+
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
   updateChatVisiblityById,
-} from '@/lib/db/queries';
-import type { VisibilityType } from '@/components/visibility-selector';
+} from '@/lib/db/supabase/queries';
+import type { VisibilityType } from '@/lib/db/types';
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
@@ -35,11 +36,11 @@ export async function generateTitleFromUserMessage({
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
-
+  const message = await getMessageById({ id });
+  if (!message) return;
   await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
+    chat_id: message.chat_id,
+    timestamp: message.created_at,
   });
 }
 
@@ -50,5 +51,5 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await updateChatVisiblityById({ chatId, visibility });
+  await updateChatVisiblityById({ id: chatId, visibility });
 }

@@ -17,8 +17,7 @@ import {
   LockIcon,
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
-
-export type VisibilityType = 'private' | 'public';
+import type { VisibilityType } from '@/lib/db/types';
 
 const visibilities: Array<{
   id: VisibilityType;

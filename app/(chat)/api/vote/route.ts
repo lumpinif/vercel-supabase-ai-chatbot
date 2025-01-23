@@ -1,4 +1,4 @@
-import { getVotesByChatId, voteMessage } from '@/lib/db/queries';
+import { getVotesByChatId, voteMessage } from '@/lib/db/supabase/queries';
 import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: Request) {
@@ -16,9 +16,13 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const votes = await getVotesByChatId({ id: chatId });
-
-  return Response.json(votes, { status: 200 });
+  try {
+    const votes = await getVotesByChatId({ chat_id: chatId });
+    return Response.json(votes || [], { status: 200 });
+  } catch (error) {
+    console.error('Error fetching votes:', error);
+    return Response.json([], { status: 200 });
+  }
 }
 
 export async function PATCH(request: Request) {
@@ -41,8 +45,8 @@ export async function PATCH(request: Request) {
   }
 
   await voteMessage({
-    chatId,
-    messageId,
+    chat_id: chatId,
+    message_id: messageId,
     type: type,
   });
 

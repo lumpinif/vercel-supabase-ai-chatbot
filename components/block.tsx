@@ -17,7 +17,7 @@ import {
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
-import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import type { BlockKind, Document, Suggestion, Vote } from '@/lib/db/types';
 import { cn, fetcher } from '@/lib/utils';
 
 import { DiffView } from './diffview';
@@ -35,8 +35,6 @@ import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
 import { ImageEditor } from './image-editor';
-
-export type BlockKind = 'text' | 'code' | 'image';
 
 export interface UIBlock {
   title: string;
@@ -438,7 +436,7 @@ function PureBlock({
                   ) : document ? (
                     <div className="text-sm text-muted-foreground">
                       {`Updated ${formatDistance(
-                        new Date(document.createdAt),
+                        new Date(document.created_at),
                         new Date(),
                         {
                           addSuffix: true,

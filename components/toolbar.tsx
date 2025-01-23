@@ -35,7 +35,7 @@ import {
   StopIcon,
   SummarizeIcon,
 } from './icons';
-import type { BlockKind } from './block';
+import type { BlockKind } from '@/lib/db/types';
 
 type ToolProps = {
   type:

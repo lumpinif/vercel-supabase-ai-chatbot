@@ -1,12 +1,11 @@
 import {
-  type Message,
   convertToCoreMessages,
   createDataStreamResponse,
+  type Message,
   smoothStream,
   streamText,
 } from 'ai';
 
-import { auth } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
@@ -27,6 +26,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { createClient } from '@/utils/supabase/server';
 
 export const maxDuration = 60;
 
@@ -53,9 +53,10 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
-  const session = await auth();
+  const supabase = await createClient();
+  const { data: session, error } = await supabase.auth.getUser();
 
-  if (!session || !session.user || !session.user.id) {
+  if (!session || !session.user || !session.user.id || error) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -103,10 +104,18 @@ export async function POST(request: Request) {
         experimental_transform: smoothStream({ chunking: 'word' }),
         tools: {
           getWeather,
-          createDocument: createDocument({ session, dataStream, model }),
-          updateDocument: updateDocument({ session, dataStream, model }),
+          createDocument: createDocument({
+            user: session.user,
+            dataStream,
+            model,
+          }),
+          updateDocument: updateDocument({
+            user: session.user,
+            dataStream,
+            model,
+          }),
           requestSuggestions: requestSuggestions({
-            session,
+            user: session.user,
             dataStream,
             model,
           }),
@@ -162,9 +171,10 @@ export async function DELETE(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const session = await auth();
+  const supabase = await createClient();
+  const { data: session, error } = await supabase.auth.getUser();
 
-  if (!session || !session.user) {
+  if (!session || !session.user || !session.user.id || error) {
     return new Response('Unauthorized', { status: 401 });
   }
 

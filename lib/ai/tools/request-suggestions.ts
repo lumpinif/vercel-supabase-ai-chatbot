@@ -1,21 +1,21 @@
 import { z } from 'zod';
-import { Model } from '../models';
-import { Session } from 'next-auth';
-import { DataStreamWriter, streamObject, tool } from 'ai';
+import type { Model } from '../models';
+import { type DataStreamWriter, streamObject, tool } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
-import { Suggestion } from '@/lib/db/schema';
+import type { Suggestion } from '@/lib/db/schema';
 import { customModel } from '..';
 import { generateUUID } from '@/lib/utils';
+import type { User } from '@supabase/supabase-js';
 
 interface RequestSuggestionsProps {
   model: Model;
-  session: Session;
+  user: User;
   dataStream: DataStreamWriter;
 }
 
 export const requestSuggestions = ({
   model,
-  session,
+  user,
   dataStream,
 }: RequestSuggestionsProps) =>
   tool({
@@ -69,8 +69,8 @@ export const requestSuggestions = ({
         suggestions.push(suggestion);
       }
 
-      if (session.user?.id) {
-        const userId = session.user.id;
+      if (user?.id) {
+        const userId = user?.id;
 
         await saveSuggestions({
           suggestions: suggestions.map((suggestion) => ({

@@ -1,12 +1,12 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
-import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { convertToUIMessages } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
+import { createClient } from '@/utils/supabase/server';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -17,7 +17,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const session = await auth();
+  const supabase = await createClient();
+  const { data: session, error } = await supabase.auth.getUser();
+
+  if (!session || !session.user || !session.user.id || error) {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
   if (chat.visibility === 'private') {
     if (!session || !session.user) {

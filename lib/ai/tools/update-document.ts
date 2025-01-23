@@ -1,27 +1,27 @@
 import {
-  DataStreamWriter,
+  type DataStreamWriter,
   experimental_generateImage,
   smoothStream,
   streamObject,
   streamText,
   tool,
 } from 'ai';
-import { Model } from '../models';
-import { Session } from 'next-auth';
+import type { Model } from '../models';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
 import { customModel, imageGenerationModel } from '..';
 import { updateDocumentPrompt } from '../prompts';
+import type { User } from '@supabase/supabase-js';
 
 interface UpdateDocumentProps {
   model: Model;
-  session: Session;
+  user: User;
   dataStream: DataStreamWriter;
 }
 
 export const updateDocument = ({
   model,
-  session,
+  user,
   dataStream,
 }: UpdateDocumentProps) =>
   tool({
@@ -126,13 +126,13 @@ export const updateDocument = ({
         dataStream.writeData({ type: 'finish', content: '' });
       }
 
-      if (session.user?.id) {
+      if (user?.id) {
         await saveDocument({
           id,
           title: document.title,
           content: draftText,
           kind: document.kind,
-          userId: session.user.id,
+          userId: user?.id,
         });
       }
 
